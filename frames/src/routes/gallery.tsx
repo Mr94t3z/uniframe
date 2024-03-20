@@ -4,8 +4,7 @@ import { kodaUrl } from "../utils";
 import { $purifyOne } from '@kodadot1/minipfs';
 import { HonoEnv } from "../constants";
 
-export const app = new Frog<HonoEnv>({
-});
+export const app = new Frog<HonoEnv>();
 
 async function fetchCollection(chain: string, id: string) {
   try {
@@ -28,15 +27,15 @@ async function fetchItem(chain: string, collection: string, id: string) {
 app.frame("/:chain/:id", async (c) => {
   const { chain, id } = c.req.param();
   const collection = await fetchCollection(chain, id);
-  if (!collection || !collection.max) {
-    throw new Error("The collection should have a maximum");
+  if (!collection || !collection.max || !collection.supply) { // Ensure supply is present
+    throw new Error("The collection should have a maximum and supply");
   }
-  const { image, max, name } = collection;
+  const { image, max, name, supply } = collection;
   const label = `Browse:${name}[${max}]`;
   return c.res({
     title: name,
     image: $purifyOne(image, "kodadot_beta"),
-    intents: [<Button action={`/view/${chain}/${id}/1`} value={max}>{label}</Button>],
+    intents: [<Button action={`/view/${chain}/${id}/1`} value={supply}>{label}</Button>], // Pass supply as value
   });
 });
 
@@ -44,22 +43,26 @@ app.frame("/view/:chain/:id/:curr", async (c) => {
   const { chain, id, curr } = c.req.param();
   const { buttonValue } = c;
   let max = Number(buttonValue);
-  if (isNaN(max) || max === 0) {
-    throw new Error("The max must be a number");
+  if (isNaN(max) || max <= 0) { // Check for <= 0 as well
+    throw new Error("The max must be a positive number");
   }
-  max = Math.min(max, 34);
+  const collection = await fetchCollection(chain, id);
+  if (!collection || !collection.supply) { // Ensure supply is present
+    throw new Error("The collection should have a supply");
+  }
+  max = Math.min(max, collection.supply); // Use collection.supply instead of supply
   const item = await fetchItem(chain, id, curr);
   const image = item ? $purifyOne(item.image, "kodadot_beta") : null;
   const random = Math.floor(Math.random() * max) + 1;
   return c.res({
-    image: image || "", // Handle potential null value
+    image: image || "",
     intents: [
       parseInt(curr) > 1 ? (
-        <Button value={`${max}`} action={`/view/${chain}/${id}/${parseInt(curr) - 1}/`}> ⬅️ </Button>
+        <Button value={`${max}`} action={`/view/${chain}/${id}/${parseInt(curr) - 1}/`}>⬅️</Button>
       ) : null,
-      <Button value={`${max}`} action={`/view/${chain}/${id}/${parseInt(curr) + 1}/`}> ➡️ </Button>,
-      <Button action={`/view/${chain}/${id}/${random}`} value={`${max}`}> 🎲 </Button>,
-      <Button.Link href={kodaUrl(chain, id, curr) || ""}>🖼️</Button.Link>, // Handle potential null value
+      <Button value={`${max}`} action={`/view/${chain}/${id}/${parseInt(curr) + 1}/`}>➡️</Button>,
+      <Button action={`/view/${chain}/${id}/${random}`} value={`${max}`}>🎲</Button>,
+      <Button.Link href={kodaUrl(chain, id, curr) || ""}>🖼️</Button.Link>,
     ],
   });
 });
