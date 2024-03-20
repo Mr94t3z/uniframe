@@ -54,6 +54,12 @@ app.frame("/view/:chain/:id/:curr", async (c) => {
   const item = await fetchItem(chain, id, curr);
   const image = item ? $purifyOne(item.image, "kodadot_beta") : null;
   const random = Math.floor(Math.random() * max) + 1;
+
+  // Custom metadata
+  const frameMetadata = {
+    'of:accepts:xmtp': '2024-02-01',
+  };
+
   return c.res({
     image: image || "",
     intents: [
@@ -64,6 +70,7 @@ app.frame("/view/:chain/:id/:curr", async (c) => {
       <Button action={`/view/${chain}/${id}/${random}`} value={`${max}`}>🎲</Button>,
       <Button.Link href={kodaUrl(chain, id, curr) || ""}>🖼️</Button.Link>,
     ],
+    ...frameMetadata,
   });
 });
 
