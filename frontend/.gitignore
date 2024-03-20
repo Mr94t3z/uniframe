@@ -1,0 +1,27 @@
+venv# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# dotenv environment file
+.env
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+
+# Compiled Python files
+*.pyc
+
+# Logs
+*.log
+
+# Dependency directories
+pip-wheel-metadata/
+node_modules/
+.vercel
