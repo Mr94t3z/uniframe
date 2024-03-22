@@ -12,6 +12,9 @@ export const app = new Frog({
 })
 
 app.use(async (c, next) => {
+
+  console.log('Incoming request:', c.req);
+
   await next();
   const isFrame = c.res.headers.get('content-type')?.includes('html');
 
@@ -25,6 +28,9 @@ app.use(async (c, next) => {
       },
     });
   }
+
+
+  console.log('Outgoing response:', c.res);
 }); 
 
 app.route('/poap', poap)

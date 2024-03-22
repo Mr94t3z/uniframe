@@ -27,8 +27,8 @@ async function fetchItem(chain: string, collection: string, id: string) {
 app.frame("/:chain/:id", async (c) => {
   const { chain, id } = c.req.param();
   const collection = await fetchCollection(chain, id);
-  if (!collection || !collection.max || !collection.supply) { // Ensure supply is present
-    throw new Error("The collection should have a maximum and supply");
+  if (!collection || isNaN(collection.max) || collection.max <= 0 || isNaN(collection.supply) || collection.supply <= 0) {
+    throw new Error("The collection should have a valid maximum and supply");
   }
   const { image, max, name, supply } = collection;
   const label = `Browse:${name}[${max}]`;
@@ -43,14 +43,12 @@ app.frame("/view/:chain/:id/:curr", async (c) => {
   const { chain, id, curr } = c.req.param();
   const { buttonValue } = c;
   let max = Number(buttonValue);
-  if (isNaN(max) || max <= 0) { // Check for <= 0 as well
-    throw new Error("The max must be a positive number");
-  }
   const collection = await fetchCollection(chain, id);
-  if (!collection || !collection.supply) { // Ensure supply is present
-    throw new Error("The collection should have a supply");
+  if (!collection || isNaN(collection.supply) || collection.supply <= 0) { // Ensure supply is present and valid
+    throw new Error("The collection should have a valid supply");
   }
-  max = Math.min(max, collection.supply); // Use collection.supply instead of supply
+  max = Math.max(max, 1); // Ensure max is at least 1
+  max = Math.min(max, collection.supply); // Ensure max does not exceed collection supply
   const item = await fetchItem(chain, id, curr);
   const image = item ? $purifyOne(item.image, "kodadot_beta") : null;
   const random = Math.floor(Math.random() * max) + 1;
