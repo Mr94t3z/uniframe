@@ -41,17 +41,28 @@ app.frame("/:chain/:id", async (c) => {
 
 app.frame("/view/:chain/:id/:curr", async (c) => {
   const { chain, id, curr } = c.req.param();
-  const { buttonValue } = c;
+  let { buttonValue } = c;
   let max = Number(buttonValue);
   const collection = await fetchCollection(chain, id);
-  if (!collection || isNaN(collection.supply) || collection.supply <= 0) { // Ensure supply is present and valid
+  
+  if (!collection || isNaN(collection.supply) || collection.supply <= 0) {
     throw new Error("The collection should have a valid supply");
   }
-  max = Math.max(max, 1); // Ensure max is at least 1
-  max = Math.min(max, collection.supply); // Ensure max does not exceed collection supply
+  
+  max = Math.max(max, 1);
+  max = Math.min(max, collection.supply);
+  
   const item = await fetchItem(chain, id, curr);
   const image = item ? $purifyOne(item.image, "kodadot_beta") : null;
+  
+  // If buttonValue is not a number or if it's NaN, generate a random number within the range
+  if (isNaN(max)) {
+    max = collection.supply;
+    buttonValue = max.toString();
+  }
+
   const random = Math.floor(Math.random() * max) + 1;
+
   return c.res({
     image: image || "",
     intents: [
@@ -59,10 +70,11 @@ app.frame("/view/:chain/:id/:curr", async (c) => {
         <Button value={`${max}`} action={`/view/${chain}/${id}/${parseInt(curr) - 1}/`}>⬅️</Button>
       ) : null,
       <Button value={`${max}`} action={`/view/${chain}/${id}/${parseInt(curr) + 1}/`}>➡️</Button>,
-      <Button action={`/view/${chain}/${id}/${random}`} value={`${max}`}>🎲</Button>,
+      <Button action={`/view/${chain}/${id}/${random}`} value={`${buttonValue}`}>🎲</Button>, // Use buttonValue here
       <Button.Link href={kodaUrl(chain, id, curr) || ""}>🖼️</Button.Link>,
     ],
   });
 });
+
 
 export default app;
