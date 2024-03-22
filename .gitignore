@@ -2,6 +2,7 @@
 
 # dependencies
 frames/node_modules
+frames/.wrangler
 /.pnp
 .pnp.js
 
