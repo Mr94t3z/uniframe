@@ -1,6 +1,6 @@
 ## Frontend
 
-Built (https://unikoda.vercel.app/) with Python Flask.
+Build https://unikoda.vercel.app/ with Python Flask.
 
 > Install.
 
@@ -22,13 +22,17 @@ python index.py
 
 ### Dashboard
 
-Before start to generate the `url route`, find the `chain` and `collection id` on this website https://kodadot.xyz/
+Before start to generate the `url route`, find the `chain` and `collection id` on this website https://kodadot.xyz/.
 
 ![Dashboard](frontend/results/dashboard.png)
 
 ### Generate URL Route
 
-After submit, it's will redirect automatically to https://warpcast.com/ using cast intens https://warpcast.com/~/compose?text={URL_Route}.
+After submit, it will redirect automatically to https://warpcast.com/ using cast intens.
+
+```
+https://warpcast.com/~/compose?text={URL_Route}.
+```
 
 ![Generate URL Route](frontend/results/generate_url_route.png)
 
